@@ -1,0 +1,100 @@
+<!doctype html> 
+  <html> 
+  <head>
+    <title>Prediction</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" 
+integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> 
+  </head>
+
+  <body style="background-color:black"> 
+    <div id="maintext" 
+style="position:relative; margin:auto; width:1000px; height:800px; text-align:center; top:0; bottom: 0; left: 0; right: 0;">
+  <h1 class="text-light mb-5"> Prediction </h1>
+  <h3 class="text-light"> Our Landmark Prediction: </h3>
+  <div class="container" align="center" margin-bottom=10px>
+    <hr>
+    <div>
+      <img src = "../static/{{predictions.image_path}}" class="img-rounded" width="400" height="200">
+    </div>
+    <hr>
+
+    <div id="map"  style="position:relative; width:500px;height:350px; margin-bottom:15px;"></div>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=<Rest API를 입력해주세요>&libraries=services"></script>
+    <script>
+    
+    var infowindow = new kakao.maps.InfoWindow({zIndex:1});
+    
+    var mapContainer = document.getElementById('map'), 
+        mapOption = {
+            center: new kakao.maps.LatLng(37.566826, 126.9786567), 
+            level: 3 
+        };  
+    
+       
+    var map = new kakao.maps.Map(mapContainer, mapOption); 
+    
+    
+    var ps = new kakao.maps.services.Places(); 
+    
+    
+    ps.keywordSearch('{{ predictions.class_name[0] }}', placesSearchCB); 
+    
+    
+    function placesSearchCB (data, status, pagination) {
+        if (status === kakao.maps.services.Status.OK) {
+    
+            
+            var bounds = new kakao.maps.LatLngBounds();
+    
+            for (var i=0; i<data.length; i++) {
+                displayMarker(data[i]);    
+                bounds.extend(new kakao.maps.LatLng(data[i].y, data[i].x));
+            }       
+    
+            map.setBounds(bounds);
+        } 
+    }
+    
+    function displayMarker(place) {
+        
+        var marker = new kakao.maps.Marker({
+            map: map,
+            position: new kakao.maps.LatLng(place.y, place.x) 
+        });
+    
+        kakao.maps.event.addListener(marker, 'click', function() {
+            infowindow.setContent('<div style="padding:5px;font-size:12px;">' + place.place_name + '</div>');
+            infowindow.open(map, marker);
+        });
+    }
+    </script>
+
+  </div>
+  <table class="table-bordered text-light" style="width:100%">
+  <tr>
+    <th>Rank</th>
+    <th>Class</th>
+    <th>Probability</th>
+  </tr>
+  <tr>
+    <td>Most Likely:</td>
+    <td>{{ predictions.class_name[0] }}</td>
+    <td>{{ predictions.probs[0] }}</td>
+  </tr>
+  <tr>
+    <td>2nd Most Likely:</td>
+    <td>{{ predictions.class_name[1] }}</td> <td>{{ predictions.probs[1] }}</td> </tr> <tr>
+    <td>3rd Most Likely:</td>
+    <td>{{ predictions.class_name[2] }}</td>
+    <td>{{ predictions.probs[2] }}</td>
+  </tr>
+  </table> 
+  <a href="https://namu.wiki/w/{{ predictions.class_name[0] }}"><button class="button mt-1">info</button></a>
+  <a href="{{ url_for('main_page') }}"><button class="button mt-3">Try again?</button></a>
+  <a href="https://www.diningcode.com/list.php?query={{ predictions.class_name[0] }}"><button class="button mt-2">food</button></a>
+</div>
+
+
+
+</body>
+</html>
